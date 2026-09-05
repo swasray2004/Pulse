@@ -1,0 +1,223 @@
+// PULSE — data model
+//
+// Design notes:
+// - MarketSnapshot is append-only and provider-scoped. We never overwrite a
+//   price observation. The resolver can decide which observation is "truth"
+//   for a symbol at a point in time while preserving provider history.
+//
+// - UserVisit is the anchor for "meaningful change since last time".
+//   DetectedChange rows are computed relative to a user's last visit,
+//   not merely since the last market-data refresh.
+//
+// - Attention-scoring inputs are stored in DetectedChange.signals as JSON.
+//   This allows the UI to render the exact contributing signals in the
+//   "Why?" / "Signal Details" panel without re-deriving the score.
+//
+// - MarketEvent represents external events such as news, earnings,
+//   guidance, 52-week highs/lows, etc.
+//
+// - UserPreference stores personalization weights used by the attention
+//   scoring engine.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String           @id @default(cuid())
+  email       String           @unique
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  watchlists  Watchlist[]
+  visits      UserVisit[]
+  preference  UserPreference?
+}
+
+model Watchlist {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  position  Int              @default(0)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  stocks    WatchlistStock[]
+  visits    UserVisit[]
+
+  @@index([userId])
+}
+
+model WatchlistStock {
+  id          String    @id @default(cuid())
+  watchlistId String
+  watchlist   Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+
+  symbol      String
+  companyName String
+  exchange    String    @default("NASDAQ")
+  sector      String    @default("Unknown")
+  position    Int       @default(0)
+  addedAt     DateTime  @default(now())
+
+  @@unique([watchlistId, symbol])
+  @@index([symbol])
+}
+
+// Append-only market observation from a single provider.
+// Never mutate an existing snapshot.
+model MarketSnapshot {
+  id          String   @id @default(cuid())
+
+  symbol      String
+
+  // Market values
+  price       Float
+  volume      Float
+
+  // Provider metadata
+  source      String   // e.g. "provider-a", "provider-b", "demo"
+  reliability Float    @default(0.9) // 0..1, static weight per source
+
+  // Exchange timestamp vs ingestion timestamp
+  timestamp   DateTime // when the observation is valid for
+  receivedAt  DateTime @default(now()) // when PULSE received it
+
+  // Original provider payload, when useful for debugging/auditing.
+  raw         Json?
+
+  @@index([symbol, timestamp])
+}
+
+// External events associated with a stock.
+model MarketEvent {
+  id        String   @id @default(cuid())
+
+  symbol    String
+
+  // Examples:
+  // "earnings"
+  // "news"
+  // "guidance"
+  // "52w_high"
+  // "52w_low"
+  // "dividend"
+  // "analyst_rating"
+  type      String
+
+  headline  String
+  summary   String?
+
+  timestamp DateTime
+
+  // Additional provider/event-specific information.
+  metadata  Json?
+
+  @@index([symbol, timestamp])
+}
+
+// Materialized output of the attention-score engine.
+//
+// One row represents a meaningful comparison for a specific
+// user + watchlist + symbol + time window.
+//
+// The comparison window is anchored to UserVisit.lastCheckedAt,
+// NOT to the last market-data refresh.
+model DetectedChange {
+  id             String   @id @default(cuid())
+
+  userId         String
+  watchlistId    String
+  symbol         String
+
+  // Overall Pulse attention score.
+  // Range: 0..100
+  attentionScore Int
+
+  // Examples:
+  // NORMAL
+  // INTERESTING
+  // IMPORTANT
+  // HIGH_ATTENTION
+  classification String
+
+  // Examples:
+  // BREAKOUT
+  // UNUSUAL_ACTIVITY
+  // EVENT_DRIVEN
+  // RELATIVE_OUTPERFORMANCE
+  // RELATIVE_UNDERPERFORMANCE
+  // VOLATILITY_SPIKE
+  state          String
+
+  // Short explanation displayed directly in the UI.
+  reason         String
+
+  // Structured scoring breakdown.
+  //
+  // Example:
+  // {
+  //   "price": 0.82,
+  //   "volume": 0.71,
+  //   "relative": 0.55,
+  //   "event": 0.90,
+  //   "volatility": 0.40,
+  //   "personalization": 0.75
+  // }
+  signals        Json
+
+  // Comparison values.
+  priceFrom      Float
+  priceTo        Float
+
+  // Exact window used to calculate the change.
+  windowStart    DateTime
+  windowEnd      DateTime
+
+  detectedAt     DateTime @default(now())
+
+  @@index([userId, watchlistId, detectedAt])
+  @@index([symbol])
+}
+
+// Records when a user checked a specific watchlist.
+//
+// lastCheckedAt is the key anchor for:
+// "What changed since you last visited?"
+model UserVisit {
+  id            String    @id @default(cuid())
+
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  watchlistId   String
+  watchlist     Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+
+  lastCheckedAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  @@index([userId, watchlistId, lastCheckedAt])
+}
+
+// Personalization controls for the attention-score engine.
+model UserPreference {
+  userId                         String   @id
+  user                           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // All sensitivity values are intended to be in the range 0..1.
+  priceSensitivity               Float    @default(0.5)
+  volumeSensitivity              Float    @default(0.5)
+  newsSensitivity                Float    @default(0.5)
+  eventSensitivity               Float    @default(0.7)
+  relativePerformanceSensitivity Float    @default(0.5)
+  breakoutSensitivity            Float    @default(0.5)
+
+  updatedAt                      DateTime @updatedAt
+}
