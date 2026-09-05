@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  createWatchlist,
-  getWatchlists,
-} from "@/lib/watchlist-service";
+import { createWatchlist, getWatchlists } from "@/lib/watchlist-service";
+import { getAuthSession } from "@/lib/auth";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const userId = request.nextUrl.searchParams.get("userId");
-
-    if (!userId) {
+    const session = await getAuthSession();
+    if (!session.userId) {
       return NextResponse.json(
-        { error: "userId is required" },
-        { status: 400 },
+        { error: "Unauthorized" },
+        { status: 401 },
       );
     }
 
-    const watchlists = await getWatchlists(userId);
+    const watchlists = await getWatchlists(session.userId);
 
     return NextResponse.json(watchlists);
   } catch (error) {
@@ -30,17 +27,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-
-    const userId = body.userId;
-    const name = body.name;
-
-    if (!userId || typeof userId !== "string") {
+    const session = await getAuthSession();
+    if (!session.userId) {
       return NextResponse.json(
-        { error: "userId is required" },
-        { status: 400 },
+        { error: "Unauthorized" },
+        { status: 401 },
       );
     }
+
+    const body = await request.json();
+    const name = body.name;
 
     if (!name || typeof name !== "string") {
       return NextResponse.json(
@@ -49,7 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const watchlist = await createWatchlist(userId, name);
+    const watchlist = await createWatchlist(session.userId, name);
 
     return NextResponse.json(watchlist, { status: 201 });
   } catch (error) {

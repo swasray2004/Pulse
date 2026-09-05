@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthSession } from "@/lib/auth";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -10,10 +11,18 @@ export async function GET(
   { params }: RouteContext,
 ) {
   try {
+    const session = await getAuthSession();
+    if (!session.userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
-    const watchlist = await prisma.watchlist.findUnique({
-      where: { id },
+    const watchlist = await prisma.watchlist.findFirst({
+      where: {
+        id,
+        userId: session.userId,
+      },
       include: {
         stocks: {
           orderBy: { position: "asc" },
@@ -44,6 +53,11 @@ export async function PATCH(
   { params }: RouteContext,
 ) {
   try {
+    const session = await getAuthSession();
+    if (!session.userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
 
@@ -60,6 +74,17 @@ export async function PATCH(
       return NextResponse.json(
         { error: "Watchlist name cannot be empty" },
         { status: 400 },
+      );
+    }
+
+    const existing = await prisma.watchlist.findFirst({
+      where: { id, userId: session.userId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Watchlist not found" },
+        { status: 404 },
       );
     }
 
@@ -89,7 +114,23 @@ export async function DELETE(
   { params }: RouteContext,
 ) {
   try {
+    const session = await getAuthSession();
+    if (!session.userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+
+    const existing = await prisma.watchlist.findFirst({
+      where: { id, userId: session.userId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Watchlist not found" },
+        { status: 404 },
+      );
+    }
 
     await prisma.watchlist.delete({
       where: { id },

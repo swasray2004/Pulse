@@ -3,6 +3,9 @@ import {
     addStockToWatchlist,
     getWatchlistStocks,
 } from "@/lib/watchlist-stock-service";
+import { findStock } from "@/lib/stock-universe";
+import { getAuthSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
     params: Promise<{ id: string }>;
@@ -13,7 +16,23 @@ export async function GET(
     { params }: RouteContext,
 ) {
     try {
+        const session = await getAuthSession();
+        if (!session.userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { id } = await params;
+
+        const watchlist = await prisma.watchlist.findFirst({
+            where: { id, userId: session.userId },
+        });
+
+        if (!watchlist) {
+            return NextResponse.json(
+                { error: "Watchlist not found" },
+                { status: 404 },
+            );
+        }
 
         const stocks = await getWatchlistStocks(id);
 
@@ -33,10 +52,28 @@ export async function POST(
     { params }: RouteContext,
 ) {
     try {
+        const session = await getAuthSession();
+        if (!session.userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { id } = await params;
+
+        const watchlist = await prisma.watchlist.findFirst({
+            where: { id, userId: session.userId },
+        });
+
+        if (!watchlist) {
+            return NextResponse.json(
+                { error: "Watchlist not found" },
+                { status: 404 },
+            );
+        }
+
         const body = await request.json();
 
-        const { symbol, companyName, exchange, sector } = body;
+        const { symbol } = body;
+        let { companyName, exchange, sector } = body;
 
         if (!symbol || typeof symbol !== "string") {
             return NextResponse.json(
@@ -45,11 +82,18 @@ export async function POST(
             );
         }
 
+        // If companyName is not supplied by the client, resolve it from the
+        // stock universe. This allows api.addStock(id, symbol) to work without
+        // requiring the caller to pass a company name.
         if (!companyName || typeof companyName !== "string") {
-            return NextResponse.json(
-                { error: "companyName is required" },
-                { status: 400 },
-            );
+            const info = findStock(symbol);
+            if (info) {
+                companyName = info.companyName;
+                exchange = exchange ?? info.exchange;
+                sector = sector ?? info.sector;
+            } else {
+                companyName = symbol.toUpperCase();
+            }
         }
 
         try {
@@ -61,7 +105,7 @@ export async function POST(
                 sector,
             );
 
-            return NextResponse.json(stock, { status: 201 });
+            return NextResponse.json({ stock }, { status: 201 });
         } catch (error) {
             const message =
                 error instanceof Error ? error.message : "Failed to add stock";

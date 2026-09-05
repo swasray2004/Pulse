@@ -31,20 +31,21 @@ export default function PulseHomePage() {
     setError(null);
 
     try {
+      const { watchlists } = await api.listWatchlists();
+
       let watchlistId = activeWatchlistId;
 
-      if (!watchlistId) {
-        const { watchlists } = await api.listWatchlists();
-
-        if (watchlists.length > 0) {
-          watchlistId = watchlists[0].id;
-          setActiveWatchlistId(watchlistId);
-        }
+      // Validate that activeWatchlistId belongs to the currently logged in user
+      if (!watchlists.some((w) => w.id === watchlistId)) {
+        watchlistId = watchlists.length > 0 ? watchlists[0].id : null;
+        setActiveWatchlistId(watchlistId);
       }
 
       if (watchlistId) {
         const data = await api.getPulse(watchlistId);
         setPulse(data);
+      } else {
+        setPulse(null);
       }
     } catch (e: any) {
       setError(e.message ?? "Something went wrong");

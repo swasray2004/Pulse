@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthSession } from "@/lib/auth";
 
 type RouteContext = {
     params: Promise<{
@@ -13,7 +14,24 @@ export async function DELETE(
     { params }: RouteContext,
 ) {
     try {
+        const session = await getAuthSession();
+        if (!session.userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { id, symbol } = await params;
+
+        // Verify watchlist belongs to user
+        const watchlist = await prisma.watchlist.findFirst({
+            where: { id, userId: session.userId },
+        });
+
+        if (!watchlist) {
+            return NextResponse.json(
+                { error: "Watchlist not found" },
+                { status: 404 },
+            );
+        }
 
         const normalizedSymbol = symbol.trim().toUpperCase();
 
