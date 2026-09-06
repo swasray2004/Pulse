@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthSession, hashPassword } from "@/lib/auth";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    const rl = checkRateLimit(`signup:${ip}`, { limit: 5, windowMs: 60 * 1000 });
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many accounts created from this IP. Please wait a minute." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rl.retryAfterSeconds ?? 60) },
+        },
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const { name, email, password, confirmPassword } = body;
 

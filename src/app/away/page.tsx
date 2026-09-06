@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { api } from "@/lib/api-client";
+import { api, PulseResult, PulseSignal, TimelineTick } from "@/lib/api-client";
 import { usePulseStore } from "@/lib/store";
 import { AwaySummaryStrip } from "@/components/AwaySummaryStrip";
 import { AttentionCard } from "@/components/AttentionCard";
@@ -11,7 +11,7 @@ import { Card, EmptyState, Skeleton } from "@/components/ui/primitives";
 
 export default function WhileYouWereAwayPage() {
   const { activeWatchlistId, setActiveWatchlistId } = usePulseStore();
-  const [pulse, setPulse] = useState<any>(null);
+  const [pulse, setPulse] = useState<PulseResult | null>(null);
   const [checkedIn, setCheckedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -61,7 +61,7 @@ export default function WhileYouWereAwayPage() {
       />
     );
   }
-  if (!pulse.awaySummary) {
+  if (!pulse || !pulse.awaySummary) {
     return <EmptyState title="Your market is quiet" description="No movements to report yet." />;
   }
 
@@ -84,7 +84,7 @@ export default function WhileYouWereAwayPage() {
 
       <Card className="mb-8">
         <div className="relative space-y-5 border-l border-white/10 pl-5">
-          {(pulse.timeline ?? []).map((t: any, i: number) => (
+          {(pulse.timeline ?? []).map((t: TimelineTick, i: number) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, x: -8 }}
@@ -116,7 +116,7 @@ export default function WhileYouWereAwayPage() {
         What deserves your attention
       </h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {pulse.signals.map((s: any, i: number) => (
+        {pulse.signals.map((s: PulseSignal, i: number) => (
           <AttentionCard key={s.symbol} data={s} index={i} watchlistId={pulse.watchlist.id} />
         ))}
       </div>

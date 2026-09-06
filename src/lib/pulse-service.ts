@@ -9,6 +9,7 @@ import {
 import {
     DEFAULT_PREFERENCES,
     type ChangeWindowInput,
+    type MarketEventInput,
     type UserPreferenceInput,
 } from "@/domain/types";
 
@@ -62,12 +63,17 @@ export async function analyzeStock(
 
     const [current, previous] = snapshots;
 
-    const priceChangePct =
-        previous.price === 0
-            ? 0
-            : ((current.price - previous.price) / previous.price) * 100;
-
     const normalVolume = previous.volume;
+
+    const validEventTypes: MarketEventInput["type"][] = [
+        "earnings",
+        "news",
+        "guidance",
+        "52w_high",
+        "52w_low",
+        "analyst_action",
+        "other",
+    ];
 
     const input: ChangeWindowInput = {
         symbol: normalizedSymbol,
@@ -88,12 +94,17 @@ export async function analyzeStock(
 
         historicalVolatilityPct: 1.5,
 
-        events: events.map((e) => ({
-            symbol: e.symbol,
-            type: (e.type as any) || "other",
-            headline: e.headline,
-            timestamp: e.timestamp,
-        })),
+        events: events.map((e) => {
+            const eventType = validEventTypes.includes(e.type as MarketEventInput["type"])
+                ? (e.type as MarketEventInput["type"])
+                : "other";
+            return {
+                symbol: e.symbol,
+                type: eventType,
+                headline: e.headline,
+                timestamp: e.timestamp,
+            };
+        }),
 
         windowStart: previous.timestamp,
         windowEnd: current.timestamp,

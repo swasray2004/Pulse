@@ -72,12 +72,20 @@ export async function POST(
 
         const body = await request.json();
 
-        const { symbol } = body;
+        const rawSymbol = body?.symbol;
         let { companyName, exchange, sector } = body;
 
-        if (!symbol || typeof symbol !== "string") {
+        if (!rawSymbol || typeof rawSymbol !== "string" || !rawSymbol.trim()) {
             return NextResponse.json(
                 { error: "symbol is required" },
+                { status: 400 },
+            );
+        }
+
+        const symbol = rawSymbol.trim().toUpperCase();
+        if (symbol.length > 15 || !/^[A-Z0-9.-]+$/.test(symbol)) {
+            return NextResponse.json(
+                { error: "Invalid stock symbol format" },
                 { status: 400 },
             );
         }

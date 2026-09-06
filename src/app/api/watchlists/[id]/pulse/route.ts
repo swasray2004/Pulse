@@ -50,13 +50,8 @@ export async function GET(
             );
         }
 
-        const message =
-            error instanceof Error
-                ? error.message
-                : "Failed to analyze watchlist pulse";
-
         return NextResponse.json(
-            { error: message },
+            { error: "Failed to analyze watchlist pulse" },
             { status: 500 },
         );
     }

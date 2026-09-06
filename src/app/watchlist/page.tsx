@@ -8,20 +8,32 @@ import { api } from "@/lib/api-client";
 import { usePulseStore } from "@/lib/store";
 import { Card, EmptyState, Skeleton } from "@/components/ui/primitives";
 
+interface WatchlistSummary {
+  id: string;
+  name: string;
+  stocks?: Array<{ symbol: string }>;
+}
+
 export default function WatchlistListPage() {
-  const [watchlists, setWatchlists] = useState<any[] | null>(null);
+  const [watchlists, setWatchlists] = useState<WatchlistSummary[] | null>(null);
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
   const { setActiveWatchlistId } = usePulseStore();
 
-  useEffect(() => {
-    void load();
-  }, []);
+  const load = async () => {
+    const res = await api.listWatchlists();
+    setWatchlists(res.watchlists as WatchlistSummary[]);
+  };
 
-  async function load() {
-    const { watchlists } = await api.listWatchlists();
-    setWatchlists(watchlists);
-  }
+  useEffect(() => {
+    let active = true;
+    api.listWatchlists().then(({ watchlists }) => {
+      if (active) setWatchlists(watchlists as WatchlistSummary[]);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function create() {
     if (!name.trim()) return;
@@ -107,7 +119,7 @@ export default function WatchlistListPage() {
                   </p>
 
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {(w.stocks ?? []).slice(0, 5).map((s: any) => (
+                    {(w.stocks ?? []).slice(0, 5).map((s: { symbol: string }) => (
                       <span
                         key={s.symbol}
                         className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/50"

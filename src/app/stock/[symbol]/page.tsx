@@ -13,7 +13,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { api } from "@/lib/api-client";
-import { formatPct, formatPrice, stateLabel } from "@/lib/format";
+import { formatPct, formatPrice } from "@/lib/format";
 import {
   Card,
   ClassificationBadge,
@@ -327,16 +327,52 @@ function HistoricalChart({
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+interface StockDetailData {
+  symbol: string;
+  companyName: string;
+  priceFrom: number;
+  priceTo: number;
+  fiftyTwoWeekHigh?: number;
+  fiftyTwoWeekLow?: number;
+  history?: HistoryPoint[];
+  attention: {
+    score: number;
+    classification: string;
+    reason: string;
+    priceChangePct: number;
+    volumeRatio: number;
+    relativeToBenchmarkPct?: number;
+    relativeToSectorPct?: number;
+    signals?: {
+      price: number;
+      volume: number;
+      relativePerformance: number;
+      event: number;
+      volatility: number;
+      personalization: number;
+    };
+  };
+  state: string;
+  observation?: {
+    freshness: string;
+    usedSource: string;
+    ageSeconds: number;
+  };
+  events?: Array<{
+    type: string;
+    headline: string;
+    timestamp: string;
+  }>;
+}
 
 export default function StockDetailPage() {
   const params = useParams<{ symbol: string }>();
   const searchParams = useSearchParams();
   const watchlistId = searchParams.get("watchlistId") ?? undefined;
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<StockDetailData | null>(null);
 
   useEffect(() => {
-    api.getStock(params.symbol, watchlistId).then(setData);
+    api.getStock(params.symbol, watchlistId).then((res) => setData(res as StockDetailData));
   }, [params.symbol, watchlistId]);
 
   if (!data) {
@@ -350,7 +386,14 @@ export default function StockDetailPage() {
   }
 
   const positive = data.attention.priceChangePct >= 0;
-  const signals = data.attention.signals;
+  const signals = data.attention.signals ?? {
+    price: 0,
+    volume: 0,
+    relativePerformance: 0,
+    event: 0,
+    volatility: 0,
+    personalization: 0,
+  };
 
   // Validate and normalize history — never crash on bad data
   const history: HistoryPoint[] = Array.isArray(data.history)
@@ -442,29 +485,29 @@ export default function StockDetailPage() {
           />
           <SignalStat
             label="vs Benchmark"
-            value={formatPct(data.attention.relativeToBenchmarkPct)}
+            value={formatPct(data.attention.relativeToBenchmarkPct ?? 0)}
           />
           <SignalStat
             label="vs Sector"
-            value={formatPct(data.attention.relativeToSectorPct)}
+            value={formatPct(data.attention.relativeToSectorPct ?? 0)}
           />
           <SignalStat
             label="52w High"
-            value={formatPrice(data.symbol, data.fiftyTwoWeekHigh)}
+            value={data.fiftyTwoWeekHigh ? formatPrice(data.symbol, data.fiftyTwoWeekHigh) : "—"}
           />
           <SignalStat
             label="52w Low"
-            value={formatPrice(data.symbol, data.fiftyTwoWeekLow)}
+            value={data.fiftyTwoWeekLow ? formatPrice(data.symbol, data.fiftyTwoWeekLow) : "—"}
           />
         </div>
 
-        {data.events.length > 0 && (
+        {(data.events ?? []).length > 0 && (
           <div className="mt-5 border-t border-white/5 pt-4">
             <p className="text-xs uppercase tracking-wide text-white/35">
               Relevant events
             </p>
             <ul className="mt-2 space-y-1.5">
-              {data.events.map((e: { type: string; headline: string }, i: number) => (
+              {(data.events ?? []).map((e: { type: string; headline: string }, i: number) => (
                 <li key={i} className="text-sm text-white/70">
                   <span className="font-medium capitalize">
                     {e.type.replace("_", " ")}:

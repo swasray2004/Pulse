@@ -13,9 +13,6 @@ import type { IMarketDataProvider } from "./provider";
 import type { MarketQuote } from "./types";
 import { MarketDataError } from "./types";
 
-/** Reliability weight assigned to Alpha Vantage observations (0..1). */
-const AV_RELIABILITY = 0.85;
-
 /** Request timeout in milliseconds. */
 const FETCH_TIMEOUT_MS = 5_000;
 

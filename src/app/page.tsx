@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { api } from "@/lib/api-client";
+import { api, PulseResult, PulseSignal } from "@/lib/api-client";
 import { usePulseStore } from "@/lib/store";
 import { AttentionCard } from "@/components/AttentionCard";
 import { MarketMap } from "@/components/MarketMap";
@@ -19,7 +19,7 @@ export default function PulseHomePage() {
   const { activeWatchlistId, setActiveWatchlistId } = usePulseStore();
   const [loading, setLoading] = useState(true);
   const [bootstrapping, setBootstrapping] = useState(false);
-  const [pulse, setPulse] = useState<any>(null);
+  const [pulse, setPulse] = useState<PulseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function PulseHomePage() {
         try {
           const data = await api.getPulse(watchlistId);
           setPulse(data);
-        } catch (pulseErr: any) {
+        } catch (pulseErr: unknown) {
           // If the selected watchlist wasn't found (e.g. stale ID), fallback to first available
           if (watchlists && watchlists.length > 0 && watchlists[0].id !== watchlistId) {
             watchlistId = watchlists[0].id;
@@ -60,8 +60,8 @@ export default function PulseHomePage() {
       } else {
         setPulse(null);
       }
-    } catch (e: any) {
-      setError(e.message ?? "Something went wrong");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -84,8 +84,8 @@ export default function PulseHomePage() {
 
       const data = await api.getPulse(watchlist.id);
       setPulse(data);
-    } catch (e: any) {
-      setError(e.message ?? "Could not create watchlist");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Could not create watchlist");
     } finally {
       setBootstrapping(false);
     }
@@ -166,7 +166,7 @@ export default function PulseHomePage() {
     );
   }
 
-  const mapEntries = [...signals, ...noise].map((s: any) => ({
+  const mapEntries = [...signals, ...noise].map((s: PulseSignal) => ({
     symbol: s.symbol,
     companyName: s.companyName,
     score: s.attention.score,
@@ -332,7 +332,7 @@ export default function PulseHomePage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {signals.map((signal: any, index: number) => (
+                {signals.map((signal: PulseSignal, index: number) => (
                   <AttentionCard
                     key={signal.symbol}
                     data={signal}
@@ -356,7 +356,7 @@ export default function PulseHomePage() {
           signals.length > 0
             ? Math.round(
                 signals.reduce(
-                  (sum: number, s: any) => sum + (s.attention?.score ?? 0),
+                  (sum: number, s: PulseSignal) => sum + (s.attention?.score ?? 0),
                   0,
                 ) / signals.length,
               )

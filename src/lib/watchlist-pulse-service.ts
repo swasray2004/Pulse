@@ -34,7 +34,10 @@ export async function analyzeWatchlistPulse(watchlistId: string) {
     ]);
 
     // Group snapshots by symbol (take at most 2 per symbol)
-    const snapshotsBySymbol = new Map<string, typeof allSnapshots>();
+    const snapshotsBySymbol = new Map<
+        string,
+        Array<{ price: number; volume: number; timestamp: Date }>
+    >();
     for (const snap of allSnapshots) {
         const list = snapshotsBySymbol.get(snap.symbol);
         if (!list) {
@@ -45,7 +48,10 @@ export async function analyzeWatchlistPulse(watchlistId: string) {
     }
 
     // Group events by symbol (take at most 5 per symbol)
-    const eventsBySymbol = new Map<string, typeof allEvents>();
+    const eventsBySymbol = new Map<
+        string,
+        Array<{ symbol: string; type: string; headline: string; timestamp: Date }>
+    >();
     for (const event of allEvents) {
         const list = eventsBySymbol.get(event.symbol);
         if (!list) {

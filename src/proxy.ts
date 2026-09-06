@@ -1,7 +1,7 @@
-import { NextResponse, type NextRequest } from "next/server";
+﻿import { NextResponse, type NextRequest } from "next/server";
 import { unsealData, sessionOptions, SessionData } from "@/lib/session";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const cookie = request.cookies.get(sessionOptions.cookieName)?.value;
@@ -54,3 +54,4 @@ export const config = {
     "/",
   ],
 };
+

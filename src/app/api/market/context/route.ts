@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthSession } from "@/lib/auth";
 
 /**
  * GET /api/market/context?watchlistId=xxx
@@ -10,6 +11,11 @@ import { prisma } from "@/lib/prisma";
  */
 export async function GET(request: NextRequest) {
     try {
+        const session = await getAuthSession();
+        if (!session.userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const watchlistId = request.nextUrl.searchParams.get("watchlistId");
 
         if (!watchlistId) {
@@ -19,9 +25,9 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Look up the watchlist and get its stocks
-        const watchlist = await prisma.watchlist.findUnique({
-            where: { id: watchlistId },
+        // Look up the watchlist and verify ownership
+        const watchlist = await prisma.watchlist.findFirst({
+            where: { id: watchlistId, userId: session.userId },
             include: {
                 stocks: { orderBy: { position: "asc" } },
             },

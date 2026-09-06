@@ -29,7 +29,14 @@ export async function GET(
 ) {
     try {
         const { symbol } = await params;
-        const normalizedSymbol = symbol.trim().toUpperCase();
+        const normalizedSymbol = (symbol ?? "").trim().toUpperCase();
+
+        if (!normalizedSymbol || normalizedSymbol.length > 15 || !/^[A-Z0-9.-]+$/.test(normalizedSymbol)) {
+            return NextResponse.json(
+                { error: "Invalid stock symbol format" },
+                { status: 400 },
+            );
+        }
 
         // Look up static metadata for company name / exchange.
         const info = findStock(normalizedSymbol);

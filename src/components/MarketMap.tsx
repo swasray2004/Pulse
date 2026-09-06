@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { formatPct } from "@/lib/format";
-import { TrendingUp, TrendingDown, ArrowRight, Radar } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 
 interface MapEntry {
   symbol: string;

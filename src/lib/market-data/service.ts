@@ -31,7 +31,6 @@ const DEDUP_WINDOW_MS = 5 * 60 * 1_000; // 5 minutes
 
 /** Reliability weight stored in MarketSnapshot.reliability. */
 const LIVE_RELIABILITY = 0.85;
-const FALLBACK_RELIABILITY = 0.5;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

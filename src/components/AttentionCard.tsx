@@ -20,7 +20,7 @@ export interface AttentionCardData {
     classification: string;
     reason: string;
     priceChangePct: number;
-    relativeToBenchmarkPct: number;
+    relativeToBenchmarkPct?: number;
     volumeRatio: number;
   };
   state: string;

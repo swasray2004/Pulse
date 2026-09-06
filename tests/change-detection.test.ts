@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeEvents, formatAway, isLongAbsence, summarizeAbsence } from "../src/domain/change-detection";
+import { dedupeEvents, isLongAbsence, summarizeAbsence } from "../src/domain/change-detection";
 import { resolveObservation, formatFreshness } from "../src/domain/market-data-resolver";
 import { ChangeWindowInput } from "../src/domain/types";
 

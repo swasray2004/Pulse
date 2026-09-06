@@ -36,16 +36,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const name = body.name;
+    const name = body?.name;
 
-    if (!name || typeof name !== "string") {
+    const trimmedName = typeof name === "string" ? name.trim() : "";
+    if (!trimmedName || trimmedName.length > 64) {
       return NextResponse.json(
-        { error: "name is required" },
+        { error: "Watchlist name must be between 1 and 64 characters" },
         { status: 400 },
       );
     }
 
-    const watchlist = await createWatchlist(session.userId, name);
+    const watchlist = await createWatchlist(session.userId, trimmedName);
 
     return NextResponse.json(watchlist, { status: 201 });
   } catch (error) {

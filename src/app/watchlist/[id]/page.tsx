@@ -9,35 +9,60 @@ import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { Card, Skeleton } from "@/components/ui/primitives";
 import { usePulseStore } from "@/lib/store";
 
+interface StockItem {
+  symbol: string;
+  companyName: string;
+}
+
+interface WatchlistDetail {
+  id: string;
+  name: string;
+  stocks: StockItem[];
+}
+
 export default function WatchlistDetailPage() {
   const params = useParams<{ id: string }>();
   const watchlistId = params.id;
   const { setActiveWatchlistId } = usePulseStore();
 
-  const [watchlist, setWatchlist] = useState<any>(null);
+  const [watchlist, setWatchlist] = useState<WatchlistDetail | null>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 300);
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<StockItem[]>([]);
   const [adding, setAdding] = useState<string | null>(null);
+
+  const load = async () => {
+    const { watchlists } = await api.listWatchlists();
+    const found = (watchlists as WatchlistDetail[]).find((w) => w.id === watchlistId) ?? null;
+    setWatchlist(found);
+  };
 
   useEffect(() => {
     setActiveWatchlistId(watchlistId);
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watchlistId]);
+    let active = true;
+    api.listWatchlists().then(({ watchlists }) => {
+      if (active) {
+        const found = (watchlists as WatchlistDetail[]).find((w) => w.id === watchlistId) ?? null;
+        setWatchlist(found);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [watchlistId, setActiveWatchlistId]);
 
   useEffect(() => {
     if (!debouncedQuery.trim()) {
-      setResults([]);
       return;
     }
-    api.searchStocks(debouncedQuery).then((r) => setResults(r.results));
+    let active = true;
+    api.searchStocks(debouncedQuery).then((r) => {
+      if (active) setResults(r.results);
+    });
+    return () => {
+      active = false;
+    };
   }, [debouncedQuery]);
-
-  async function load() {
-    const { watchlists } = await api.listWatchlists();
-    setWatchlist(watchlists.find((w: any) => w.id === watchlistId) ?? null);
-  }
 
   async function addStock(symbol: string) {
     setAdding(symbol);
@@ -53,7 +78,7 @@ export default function WatchlistDetailPage() {
 
   async function removeStock(symbol: string) {
     // optimistic update
-    setWatchlist((w: any) => ({ ...w, stocks: w.stocks.filter((s: any) => s.symbol !== symbol) }));
+    setWatchlist((w) => (w ? { ...w, stocks: w.stocks.filter((s) => s.symbol !== symbol) } : null));
     await api.removeStock(watchlistId, symbol);
   }
 
@@ -61,7 +86,8 @@ export default function WatchlistDetailPage() {
     return <Skeleton className="h-64 w-full" />;
   }
 
-  const watchedSymbols = new Set(watchlist.stocks.map((s: any) => s.symbol));
+  const watchedSymbols = new Set(watchlist.stocks.map((s) => s.symbol));
+  const displayResults = debouncedQuery.trim() ? results : [];
 
   return (
     <div>
@@ -77,14 +103,14 @@ export default function WatchlistDetailPage() {
           className="glass w-full rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 outline-none focus:border-signal-500/50"
         />
         <AnimatePresence>
-          {results.length > 0 && (
+          {displayResults.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="glass absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl"
             >
-              {results.map((r) => {
+              {displayResults.map((r) => {
                 const already = watchedSymbols.has(r.symbol);
                 return (
                   <button
@@ -108,7 +134,7 @@ export default function WatchlistDetailPage() {
 
       <div className="mt-8 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         <AnimatePresence>
-          {watchlist.stocks.map((s: any) => (
+          {watchlist.stocks.map((s) => (
             <motion.div
               key={s.symbol}
               layout
