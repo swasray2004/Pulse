@@ -1,6 +1,6 @@
-﻿<div align="center">
+<div align="center">
 
-# âš¡ PULSE
+# ⚡ PULSE
 
 ### *Your market, monitored for you.*
 
@@ -18,20 +18,20 @@
 
 </div>
 
-## ðŸš€ Live Demo
+## 🚀 Live Demo
 
 ### **Deployed URL → https://pulse-opal-ten.vercel.app/**
 
-### **[ðŸ’» GitHub Repository â†’](https://github.com/swasray2004/Pulse)**
+### **[💻 GitHub Repository →](https://github.com/swasray2004/Pulse)**
 
 ![Pulse Demo](docs/pulse-demo.gif)
 *Attention-ranked signals on the Pulse homepage, scored from your last visit.*
 
-## ðŸŽ¯ 100-Word Product Pitch
+## 🎯 100-Word Product Pitch
 
 PULSE is a smart market watchlist designed around one question: **what actually deserves my attention?** Instead of showing every price movement equally, PULSE establishes a personal baseline from the user's last visit, detects meaningful changes, and ranks them using transparent signals across price, volume, relative performance, catalysts, volatility, and preferences. I designed it as a modular monolith so the core decision logic remains pure and independently testable while the application stays simple to deploy. PostgreSQL provides persistent watchlists, snapshots, events, and visit state, while provider fallbacks prevent unreliable market APIs from breaking the experience. The result is a watchlist that explains **what changed, why it matters, and what to look at next.**
 
-## ðŸ’¡ The Problem
+## 💡 The Problem
 
 Traditional brokerages and watchlist apps force investors into a passive, anxiety-inducing loop:
 - **Alert Fatigue:** Users check watchlists 20+ times a day only to see random, normal market vibrations.
@@ -40,7 +40,7 @@ Traditional brokerages and watchlist apps force investors into a passive, anxiet
 
 ---
 
-## ðŸš€ The Solution: What is PULSE?
+## 🚀 The Solution: What is PULSE?
 
 **PULSE** is a smart watchlist assistant. Instead of asking you to stare at flickering green and red numbers, PULSE analyzes your portfolio and surfaces:
 1. **What changed** in your market.
@@ -52,15 +52,15 @@ flowchart LR
     A[Market Ingestion & Real-Time Feeds] --> B[Deduplication & Append-Only Snapshots]
     B --> C[Pure Domain Scoring Engine]
     C --> D{Attention Classifier}
-    D -->|High Conviction| E[âš¡ High Attention Signals]
-    D -->|Contextual Move| F[ðŸ”¶ Important / Interesting]
-    D -->|Normal Fluctuation| G[ðŸŒ± Filtered Noise]
+    D -->|High Conviction| E[⚡ High Attention Signals]
+    D -->|Contextual Move| F[🔶 Important / Interesting]
+    D -->|Normal Fluctuation| G[🌱 Filtered Noise]
     E & F & G --> H[Celestial Market Map & Away Catch-Up Strip]
 ```
 
 ---
 
-## ðŸ§  The Product Decision
+## 🧠 The Product Decision
 
 Most watchlists answer:
 
@@ -87,14 +87,14 @@ The goal is to reduce the amount of information a user has to process.
 
 ---
 
-## âœ¨ Key Features
+## ✨ Key Features
 
-### 1. ðŸª Celestial Physics Market Map
+### 1. 🪐 Celestial Physics Market Map
 - Interactive, collision-relaxed celestial visualization of your watchlist.
 - Spheres are gravitationally drawn to the core based on their **Attention Score** and rendered with realistic 3D lighting, rim glints, and animated pulse halos.
 - Instant hover peek with contextual price trajectory and direct stock drill-down.
 
-### 2. â³ "While You Were Away" Catch-Up Engine
+### 2. ⏳ "While You Were Away" Catch-Up Engine
 - When you return after hours or days, PULSE calculates the real time since your last visit and summarizes how many movements occurred, which deserve attention, and which were filtered as noise.
 - Interactive visual event timeline chronologically ordering catalyst events, volume anomalies, and earnings reactions.
 - One-click check-in to reset your market baseline.
@@ -102,23 +102,23 @@ The goal is to reduce the amount of information a user has to process.
 ![Away Mode](docs/away.gif)
 *Returning after hours away: real duration calculated from your last visit, movements ranked by attention score.*
 
-### 3. ðŸŽ¯ Multi-Factor Attention Score (0 â€“ 100)
+### 3. 🎯 Multi-Factor Attention Score (0 – 100)
 Every stock movement is mathematically graded across 6 orthogonal dimensions:
-- **Price Velocity (0â€“30 pts):** Magnified moves normalized against volatility.
-- **Volume Anomaly (0â€“20 pts):** Current volume vs. 20-day historical baseline ratio.
-- **Relative Strength (0â€“20 pts):** Outperformance vs. benchmark index and sector peers.
-- **Catalyst Corroboration (0â€“15 pts):** Corroborated with news, earnings beats, guidance revisions, or 52-week milestones.
-- **Historical Volatility Dampener (0â€“10 pts):** Filters out expected chop in naturally volatile assets.
+- **Price Velocity (0–30 pts):** Magnified moves normalized against volatility.
+- **Volume Anomaly (0–20 pts):** Current volume vs. 20-day historical baseline ratio.
+- **Relative Strength (0–20 pts):** Outperformance vs. benchmark index and sector peers.
+- **Catalyst Corroboration (0–15 pts):** Corroborated with news, earnings beats, guidance revisions, or 52-week milestones.
+- **Historical Volatility Dampener (0–10 pts):** Filters out expected chop in naturally volatile assets.
 - **Personalized Weights (-10 to +10 pts):** Fine-tune sensitivity sliders to match your trading style.
 
-### 4. âª Time Travel Market Replay
+### 4. ⏪ Time Travel Market Replay
 - Scrub back and forth across market hours with an interactive scrubber.
 - Watch how attention shifts across your watchlist as market sessions develop.
 
 ![Replay](docs/replay.gif)
 *Price Replay: scrub the observation timeline to see exactly how each symbol moved across the session.*
 
-### 5. ðŸ” Transparent Signal Attribution
+### 5. 🔍 Transparent Signal Attribution
 - No black boxes. Every classification provides complete explainability:
   - Exact breakdown of which components generated the score.
   - Data freshness indicators (`LIVE`, `DELAYED`, or `STALE`).
@@ -126,7 +126,7 @@ Every stock movement is mathematically graded across 6 orthogonal dimensions:
 
 ---
 
-## ðŸ›¡ï¸ Edge Cases & Resilience
+## 🛡️ Edge Cases & Resilience
 
 PULSE is designed around failure and ambiguous data, not just the happy path.
 
@@ -145,47 +145,47 @@ PULSE is designed around failure and ambiguous data, not just the happy path.
 
 ---
 
-## ðŸ—ï¸ Architecture & Engineering Highlights
+## 🏗️ Architecture & Engineering Highlights
 
 ```
 pulse_groww/
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ app/                      # Next.js 16 App Router (React 19)
-â”‚   â”‚   â”œâ”€â”€ api/                  # Secure REST API routes (Auth & Permissions enforced)
-â”‚   â”‚   â”œâ”€â”€ away/                 # While You Were Away catch-up page
-â”‚   â”‚   â”œâ”€â”€ preferences/          # User sensitivity configuration
-â”‚   â”‚   â”œâ”€â”€ replay/               # Historical market scrubber
-â”‚   â”‚   â”œâ”€â”€ stock/[symbol]/       # Deep-dive stock inspection & signal breakdown
-â”‚   â”‚   â””â”€â”€ watchlist/            # Multi-watchlist management
-â”‚   â”œâ”€â”€ components/               # Glassmorphic UI & Canvas/SVG components
-â”‚   â”‚   â”œâ”€â”€ MarketMap.tsx         # Physics-relaxed 3D celestial canvas
-â”‚   â”‚   â”œâ”€â”€ AttentionCard.tsx     # Signal cards with micro-animations
-â”‚   â”‚   â””â”€â”€ NumberMorph.tsx       # Smooth spring-physics metric transitions
-â”‚   â”œâ”€â”€ domain/                   # Pure Domain Logic (0 external I/O, 100% test coverage)
-â”‚   â”‚   â”œâ”€â”€ attention-score.ts    # Mathematical scoring engine
-â”‚   â”‚   â”œâ”€â”€ change-detection.ts   # Absence summarizer & event deduplication
-â”‚   â”‚   â”œâ”€â”€ state-classifier.ts   # Market state machine
-â”‚   â”‚   â””â”€â”€ market-data-resolver.ts # Conflict resolution & freshness guards
-â”‚   â””â”€â”€ lib/                      # Infrastructure, database pool, & external clients
-â”‚       â”œâ”€â”€ prisma.ts             # Connection-pooled PostgreSQL singleton
-â”‚       â”œâ”€â”€ auth.ts               # Iron-session encrypted cookie handlers
-â”‚       â””â”€â”€ market-data/          # External provider adapters with resilient fallback
-â””â”€â”€ prisma/
-    â”œâ”€â”€ schema.prisma             # PostgreSQL data model
-    â””â”€â”€ seed-demo.mjs             # Zero-dependency demo market snapshot seeder
+├── src/
+│   ├── app/                      # Next.js 16 App Router (React 19)
+│   │   ├── api/                  # Secure REST API routes (Auth & Permissions enforced)
+│   │   ├── away/                 # While You Were Away catch-up page
+│   │   ├── preferences/          # User sensitivity configuration
+│   │   ├── replay/               # Historical market scrubber
+│   │   ├── stock/[symbol]/       # Deep-dive stock inspection & signal breakdown
+│   │   └── watchlist/            # Multi-watchlist management
+│   ├── components/               # Glassmorphic UI & Canvas/SVG components
+│   │   ├── MarketMap.tsx         # Physics-relaxed 3D celestial canvas
+│   │   ├── AttentionCard.tsx     # Signal cards with micro-animations
+│   │   └── NumberMorph.tsx       # Smooth spring-physics metric transitions
+│   ├── domain/                   # Pure Domain Logic (0 external I/O, 100% test coverage)
+│   │   ├── attention-score.ts    # Mathematical scoring engine
+│   │   ├── change-detection.ts   # Absence summarizer & event deduplication
+│   │   ├── state-classifier.ts   # Market state machine
+│   │   └── market-data-resolver.ts # Conflict resolution & freshness guards
+│   └── lib/                      # Infrastructure, database pool, & external clients
+│       ├── prisma.ts             # Connection-pooled PostgreSQL singleton
+│       ├── auth.ts               # Iron-session encrypted cookie handlers
+│       └── market-data/          # External provider adapters with resilient fallback
+└── prisma/
+    ├── schema.prisma             # PostgreSQL data model
+    └── seed-demo.mjs             # Zero-dependency demo market snapshot seeder
 ```
 
-### ðŸ›¡ï¸ Production & Security Best Practices
+### 🛡️ Production & Security Best Practices
 - **Session Security:** State-of-the-art encrypted session cookies using `iron-session` with `httpOnly`, `secure`, and `sameSite: "lax"`.
 - **Credential Protection:** Passwords securely hashed with salted `bcryptjs`.
 - **Strict Authorization:** Multi-tenant isolation ensuring users can only read, analyze, and mutate their own watchlists and preferences.
 - **Enterprise Security Headers:** Configured with `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, and modern strict transport headers.
-- **Graceful Fault Tolerance:** External market provider outages, rate limits (HTTP 429), or missing API keys automatically fall back to historical snapshots marked as `isStale: true` â€” **never crashing, never fabricating fake data**.
+- **Graceful Fault Tolerance:** External market provider outages, rate limits (HTTP 429), or missing API keys automatically fall back to historical snapshots marked as `isStale: true` — **never crashing, never fabricating fake data**.
 - **DB Connection Resiliency:** Custom connection pool limiter configured for high concurrency and zero leak operations.
 
 ---
 
-## âš–ï¸ Key Engineering Trade-offs
+## ⚖️ Key Engineering Trade-offs
 
 ### Modular monolith over microservices
 PULSE keeps the application in one deployable unit while separating domain logic, infrastructure, API routes, and UI. This keeps deployment and debugging simple without coupling the scoring engine to the framework.
@@ -207,7 +207,7 @@ Rate limiting is intentionally lightweight for the current single-instance deplo
 
 ---
 
-## ðŸ“ˆ Scalability
+## 📈 Scalability
 
 The current architecture is intentionally simple but has clear scaling boundaries:
 
@@ -220,7 +220,7 @@ The current architecture is intentionally simple but has clear scaling boundarie
 
 ---
 
-## âš¡ Quick Start
+## ⚡ Quick Start
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v20+ recommended)
@@ -262,7 +262,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## ðŸ‘€ What to Try
+## 👀 What to Try
 
 For the intended experience:
 
@@ -275,7 +275,7 @@ For the intended experience:
 
 ---
 
-## ðŸ§ª Verification & Quality Assurance
+## 🧪 Verification & Quality Assurance
 
 PULSE is thoroughly tested and verified with zero compiler or linter errors:
 
@@ -292,6 +292,6 @@ npm run build
 
 ---
 
-## ðŸ‘¥ Authors & Acknowledgments
+## 👥 Authors & Acknowledgments
 
 Built for the **Groww Hackathon**. Designed and developed with precision for modern investors.
