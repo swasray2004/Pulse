@@ -18,6 +18,9 @@
 
 </div>
 
+![Pulse Demo](docs/pulse-demo.gif)
+*Attention-ranked signals on the Pulse homepage, scored from your last visit.*
+
 ## 💡 The Problem
 
 Traditional brokerages and watchlist apps force investors into a passive, anxiety-inducing loop:
@@ -59,6 +62,9 @@ flowchart LR
 - Interactive visual event timeline chronologically ordering catalyst events, volume anomalies, and earnings reactions.
 - One-click check-in to reset your market baseline.
 
+![Away Mode](docs/away.gif)
+*Returning after hours away: real duration calculated from your last visit, movements ranked by attention score.*
+
 ### 3. 🎯 Multi-Factor Attention Score (0 – 100)
 Every stock movement is mathematically graded across 6 orthogonal dimensions:
 - **Price Velocity (0–30 pts):** Magnified moves normalized against volatility.
@@ -71,6 +77,9 @@ Every stock movement is mathematically graded across 6 orthogonal dimensions:
 ### 4. ⏪ Time Travel Market Replay
 - Scrub back and forth across market hours with an interactive scrubber.
 - Watch how attention shifts across your watchlist as market sessions develop.
+
+![Replay](docs/replay.gif)
+*Price Replay: scrub the observation timeline to see exactly how each symbol moved across the session.*
 
 ### 5. 🔍 Transparent Signal Attribution
 - No black boxes. Every classification provides complete explainability:
