@@ -18,8 +18,14 @@
 
 </div>
 
+**[🚀 Try PULSE Live](https://pulse-opal-ten.vercel.app)** · **[💻 View Source](https://github.com/swasray2004/Pulse)**
+
 ![Pulse Demo](docs/pulse-demo.gif)
 *Attention-ranked signals on the Pulse homepage, scored from your last visit.*
+
+## 🎯 100-Word Product Pitch
+
+PULSE is a smart market watchlist designed around one question: **what actually deserves my attention?** Instead of showing every price movement equally, PULSE establishes a personal baseline from the user's last visit, detects meaningful changes, and ranks them using transparent signals across price, volume, relative performance, catalysts, volatility, and preferences. I designed it as a modular monolith so the core decision logic remains pure and independently testable while the application stays simple to deploy. PostgreSQL provides persistent watchlists, snapshots, events, and visit state, while provider fallbacks prevent unreliable market APIs from breaking the experience. The result is a watchlist that explains **what changed, why it matters, and what to look at next.**
 
 ## 💡 The Problem
 
@@ -50,6 +56,33 @@ flowchart LR
 
 ---
 
+## 🧠 The Product Decision
+
+Most watchlists answer:
+
+> "What are the prices right now?"
+
+PULSE answers:
+
+> **"What meaningfully changed since I last looked, and what deserves my attention?"**
+
+That distinction drives the entire product.
+
+Instead of treating every price movement as equally important, PULSE:
+
+- Establishes a baseline from the user's last visit
+- Detects meaningful changes rather than simple movement
+- Combines multiple signals into an Attention Score
+- Explains why a movement matters
+- Filters normal market noise
+- Lets users replay how attention changed over time
+
+The goal is not to show **more market information**.
+
+The goal is to reduce the amount of information a user has to process.
+
+---
+
 ## ✨ Key Features
 
 ### 1. 🪐 Celestial Physics Market Map
@@ -58,7 +91,7 @@ flowchart LR
 - Instant hover peek with contextual price trajectory and direct stock drill-down.
 
 ### 2. ⏳ "While You Were Away" Catch-Up Engine
-- When you return after hours or days, PULSE tells you: *"You were away for 4h 37m. 23 movements occurred: 4 deserve attention, 19 filtered as noise."*
+- When you return after hours or days, PULSE calculates the real time since your last visit and summarizes how many movements occurred, which deserve attention, and which were filtered as noise.
 - Interactive visual event timeline chronologically ordering catalyst events, volume anomalies, and earnings reactions.
 - One-click check-in to reset your market baseline.
 
@@ -86,6 +119,25 @@ Every stock movement is mathematically graded across 6 orthogonal dimensions:
   - Exact breakdown of which components generated the score.
   - Data freshness indicators (`LIVE`, `DELAYED`, or `STALE`).
   - Source tracking and discrepancy detection between data providers.
+
+---
+
+## 🛡️ Edge Cases & Resilience
+
+PULSE is designed around failure and ambiguous data, not just the happy path.
+
+| Scenario | Behaviour |
+|---|---|
+| First-time user | Establishes a baseline instead of inventing an "away" period |
+| Empty watchlist | Shows an intentional empty state rather than failing |
+| Missing market snapshots | Falls back to the latest available stored data |
+| Stale provider data | Surfaces freshness state (`LIVE` / `DELAYED` / `STALE`) instead of presenting it as live |
+| Provider outage / rate limit | Uses stored snapshots rather than breaking the experience |
+| Conflicting market data | Applies reliability ranking and discrepancy detection before surfacing data |
+| Long absence (3+ days) | Caps high-attention signals at 8 to prevent overwhelming the user |
+| Duplicate events | Deduplicates events within a 10-minute time bucket |
+| Concurrent check-ins | Uses persisted `UserVisit` state; visit timestamp is written only after scores are computed |
+| Unauthorized watchlist access | Server derives the authenticated user from the session and enforces ownership on every query |
 
 ---
 
@@ -129,6 +181,41 @@ pulse_groww/
 
 ---
 
+## ⚖️ Key Engineering Trade-offs
+
+### Modular monolith over microservices
+PULSE keeps the application in one deployable unit while separating domain logic, infrastructure, API routes, and UI. This keeps deployment and debugging simple without coupling the scoring engine to the framework.
+
+### Database-backed state over client state
+Watchlists, market snapshots, events, preferences, and visit timestamps live in PostgreSQL so the user's baseline survives sessions and devices.
+
+### Provider abstraction over provider coupling
+Market data access is isolated behind provider adapters (`IMarketDataProvider`). This allows the application to change providers without touching the attention engine.
+
+### Graceful fallback over fake freshness
+When external market data is unavailable, PULSE uses the latest known snapshot and marks it `isStale: true` rather than fabricating current values.
+
+### No unnecessary real-time infrastructure
+The current product uses request-driven market ingestion rather than WebSockets. This keeps the architecture simple for the problem while leaving a clear path to real-time updates later.
+
+### In-memory rate limiting
+Rate limiting is intentionally lightweight for the current single-instance deployment. A distributed limiter (e.g. Redis) would be appropriate when running multiple application instances.
+
+---
+
+## 📈 Scalability
+
+The current architecture is intentionally simple but has clear scaling boundaries:
+
+- **Stateless application routes** allow additional application instances to be added horizontally.
+- **PostgreSQL** provides durable shared state for users, watchlists, snapshots, events, and visits.
+- **Connection pooling** prevents every request from creating an independent database connection.
+- **Domain logic is isolated from I/O**, allowing scoring and change detection to scale independently if market processing becomes asynchronous.
+- **Provider adapters** isolate external API rate limits and failures from the rest of the application.
+- For significantly larger workloads, market ingestion can move to a background worker/queue and attention computation can be cached or materialized rather than calculated on every request.
+
+---
+
 ## ⚡ Quick Start
 
 ### Prerequisites
@@ -144,9 +231,17 @@ npm install
 
 ### 2. Configure Environment
 Copy the sample environment file:
+
+**macOS / Linux:**
 ```bash
 cp .env.example .env
 ```
+
+**Windows PowerShell:**
+```powershell
+Copy-Item .env.example .env
+```
+
 *(Optionally provide `MARKET_DATA_API_KEY` for live Alpha Vantage market ingestion, or leave blank to run in offline sandbox mode).*
 
 ### 3. Seed Demo Market Data
@@ -160,6 +255,19 @@ npm run seed
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 👀 What to Try
+
+For the intended experience:
+
+1. Create a watchlist and add several stocks.
+2. Open the watchlist to see attention-ranked movements.
+3. Explore a stock to inspect the Attention Score breakdown.
+4. Return later to experience the **While You Were Away** summary.
+5. Open **Replay** and scrub through the observation timeline.
+6. Adjust preferences and observe how sensitivity affects attention rankings.
 
 ---
 
