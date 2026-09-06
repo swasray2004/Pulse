@@ -37,7 +37,7 @@ export async function GET(
             );
         }
 
-        const pulse = await analyzeWatchlistPulse(id);
+        const pulse = await analyzeWatchlistPulse(id, session.userId);
 
         return NextResponse.json(pulse);
     } catch (error) {

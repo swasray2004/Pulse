@@ -68,7 +68,7 @@ export interface PulseResult {
     meaningfulCount: number;
     filteredCount: number;
     isLongAbsence: boolean;
-  };
+  } | null;
   signals: PulseSignal[];
   noise: PulseSignal[];
   timeline: TimelineTick[];
@@ -167,6 +167,13 @@ export const api = {
   getPulse: async (watchlistId: string): Promise<PulseResult> => {
     const data = await request<{
       watchlist: { id: string; name: string };
+      awaySummary: {
+        awayLabel: string;
+        totalMovements: number;
+        meaningfulCount: number;
+        filteredCount: number;
+        isLongAbsence: boolean;
+      } | null;
       summary: { analyzedStocks: number };
       items: Array<{
         symbol: string;
@@ -222,13 +229,10 @@ export const api = {
 
     return {
       watchlist: data.watchlist,
-      awaySummary: {
-        awayLabel: "4 hours",
-        totalMovements: data.summary?.analyzedStocks ?? 0,
-        meaningfulCount: signals.length,
-        filteredCount: noise.length,
-        isLongAbsence: false,
-      },
+      // Pass the real awaySummary from the server.
+      // null means no previous visit (first-time user) — the homepage
+      // will render an appropriate welcome state instead of an away banner.
+      awaySummary: data.awaySummary ?? null,
       signals,
       noise,
       timeline,

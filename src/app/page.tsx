@@ -149,17 +149,19 @@ export default function PulseHomePage() {
 
   const { watchlist, awaySummary, signals, noise } = pulse;
 
+  // awaySummary is null for first-time visitors who have never checked in.
+  // The user hasn't visited before, so they haven't caught up with anything yet.
   if (!awaySummary) {
     return (
       <EmptyState
-        title="Your market is quiet"
-        description="No watched symbols yet in this list."
+        title="Welcome to Pulse"
+        description="We'll track what changes in your watchlist while you're away. Check back after the market moves and we'll show you exactly what happened and why it matters."
         action={
           <Link
             href={`/watchlist/${watchlist.id}`}
             className="rounded-full bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/15"
           >
-            Manage watchlist
+            View watchlist
           </Link>
         }
       />
@@ -174,6 +176,7 @@ export default function PulseHomePage() {
     classification: s.attention.classification,
   }));
 
+  // awaySummary is guaranteed non-null here (guarded above).
   const awayText = awaySummary.awayLabel.toLowerCase().startsWith("since")
     ? awaySummary.awayLabel
     : `Away for ${awaySummary.awayLabel}`;

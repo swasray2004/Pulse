@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { analyzeStock } from "@/lib/pulse-service";
+import { summarizeAbsence } from "@/domain/change-detection";
+import { DEFAULT_PREFERENCES, type ChangeWindowInput } from "@/domain/types";
 
-export async function analyzeWatchlistPulse(watchlistId: string) {
+export async function analyzeWatchlistPulse(watchlistId: string, userId: string) {
     const watchlist = await prisma.watchlist.findUnique({
         where: { id: watchlistId },
         include: {
@@ -14,6 +16,15 @@ export async function analyzeWatchlistPulse(watchlistId: string) {
     if (!watchlist) {
         throw new Error("Watchlist not found");
     }
+
+    // ── 1. Read the user's PREVIOUS visit timestamp BEFORE touching anything ──
+    // This defines the "while you were away" window.
+    const previousVisit = await prisma.userVisit.findFirst({
+        where: { userId, watchlistId },
+        orderBy: { lastCheckedAt: "desc" },
+    });
+
+    const previousCheckedAt = previousVisit?.lastCheckedAt ?? null;
 
     const symbols = watchlist.stocks.map((s) => s.symbol.trim().toUpperCase());
 
@@ -105,11 +116,72 @@ export async function analyzeWatchlistPulse(watchlistId: string) {
         (item) => item.classification === "INTERESTING",
     ).length;
 
+    // ── 2. Compute real away summary from actual previousCheckedAt ──
+    // If there is no previous visit, awaySummary is null — the caller
+    // should treat this as a first-time visitor and skip the away banner.
+    let awaySummary: {
+        awayLabel: string;
+        isLongAbsence: boolean;
+        totalMovements: number;
+        meaningfulCount: number;
+        filteredCount: number;
+    } | null = null;
+
+    if (previousCheckedAt !== null) {
+        // Build ChangeWindowInput list from the items that have both price points
+        const changeInputs: ChangeWindowInput[] = items
+            .filter((item) => item.windowStart && item.windowEnd)
+            .map((item) => {
+                const snapshots = snapshotsBySymbol.get(item.symbol.trim().toUpperCase()) ?? [];
+                const [latest, previous] = snapshots;
+                return {
+                    symbol: item.symbol,
+                    companyName: item.companyName,
+                    sector: "",
+                    priceFrom: previous?.price ?? latest?.price ?? 0,
+                    priceTo: latest?.price ?? 0,
+                    normalVolume: previous?.volume ?? latest?.volume ?? 0,
+                    currentVolume: latest?.volume ?? 0,
+                    benchmarkChangePct: 0,
+                    sectorChangePct: 0,
+                    fiftyTwoWeekHigh: latest?.price ?? 0,
+                    fiftyTwoWeekLow: latest?.price ?? 0,
+                    historicalVolatilityPct: Math.max(Math.abs(item.priceChangePct), 0.5),
+                    events: [],
+                    windowStart: new Date(item.windowStart),
+                    windowEnd: new Date(item.windowEnd),
+                } satisfies ChangeWindowInput;
+            });
+
+        const summary = summarizeAbsence(changeInputs, previousCheckedAt, DEFAULT_PREFERENCES);
+
+        awaySummary = {
+            awayLabel: summary.awayLabel,
+            isLongAbsence: summary.isLongAbsence,
+            totalMovements: items.length,
+            meaningfulCount: items.filter((i) => i.classification !== "NORMAL").length,
+            filteredCount: items.filter((i) => i.classification === "NORMAL").length,
+        };
+    } else {
+        // ── First visit: seed the UserVisit baseline ──────────────────────────
+        // awaySummary stays null (returned to caller as "Welcome to Pulse"),
+        // but we record lastCheckedAt = now so the NEXT load can calculate a
+        // real away duration instead of staying on the first-visit state forever.
+        await prisma.userVisit.create({
+            data: {
+                userId,
+                watchlistId,
+                lastCheckedAt: new Date(),
+            },
+        });
+    }
+
     return {
         watchlist: {
             id: watchlist.id,
             name: watchlist.name,
         },
+        awaySummary,
         summary: {
             totalStocks: watchlist.stocks.length,
             analyzedStocks: items.length,
@@ -120,4 +192,4 @@ export async function analyzeWatchlistPulse(watchlistId: string) {
         },
         items,
     };
-}
+}
