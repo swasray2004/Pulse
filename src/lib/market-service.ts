@@ -47,3 +47,23 @@ export async function getMarketSnapshots(
         take: limit,
     });
 }
+
+/**
+ * Return all snapshots for a symbol whose observation timestamp is >= since.
+ * Useful for detecting whether we already have a fresh snapshot in a time
+ * window without needing to call the external provider again.
+ */
+export async function getMarketSnapshotsSince(
+    symbol: string,
+    since: Date,
+) {
+    return prisma.marketSnapshot.findMany({
+        where: {
+            symbol: symbol.trim().toUpperCase(),
+            timestamp: { gte: since },
+        },
+        orderBy: {
+            timestamp: "desc",
+        },
+    });
+}
