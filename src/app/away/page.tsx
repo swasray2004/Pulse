@@ -125,7 +125,7 @@ export default function WhileYouWereAwayPage() {
         <button
           onClick={acknowledge}
           disabled={checkedIn}
-          className="rounded-full bg-pulse-gradient px-6 py-3 text-sm font-semibold text-ink-950 shadow-glow transition-transform hover:scale-105 disabled:opacity-50"
+          className="rounded-xl bg-[#00F3BB] hover:bg-[#33F7C9] px-6 py-3 text-sm font-bold text-ink-950 shadow-[0_0_24px_rgba(0,243,187,0.35)] hover:shadow-[0_0_32px_rgba(0,243,187,0.5)] transition-all hover:scale-105 disabled:opacity-50"
         >
           {checkedIn ? "Caught up ✓" : "I'm caught up — reset the clock"}
         </button>

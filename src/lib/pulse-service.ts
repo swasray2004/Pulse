@@ -20,15 +20,26 @@ export async function analyzeStock(
 ) {
     const normalizedSymbol = symbol.trim().toUpperCase();
 
-    const snapshots = await prisma.marketSnapshot.findMany({
-        where: {
-            symbol: normalizedSymbol,
-        },
-        orderBy: {
-            timestamp: "desc",
-        },
-        take: 2,
-    });
+    const [snapshots, events] = await Promise.all([
+        prisma.marketSnapshot.findMany({
+            where: {
+                symbol: normalizedSymbol,
+            },
+            orderBy: {
+                timestamp: "desc",
+            },
+            take: 2,
+        }),
+        prisma.marketEvent.findMany({
+            where: {
+                symbol: normalizedSymbol,
+            },
+            orderBy: {
+                timestamp: "desc",
+            },
+            take: 5,
+        }),
+    ]);
 
     if (snapshots.length < 2) {
         return null;
@@ -60,12 +71,14 @@ export async function analyzeStock(
         fiftyTwoWeekHigh: current.price,
         fiftyTwoWeekLow: current.price,
 
-        historicalVolatilityPct: Math.max(
-            Math.abs(priceChangePct),
-            0.5,
-        ),
+        historicalVolatilityPct: 1.5,
 
-        events: [],
+        events: events.map((e) => ({
+            symbol: e.symbol,
+            type: (e.type as any) || "other",
+            headline: e.headline,
+            timestamp: e.timestamp,
+        })),
 
         windowStart: previous.timestamp,
         windowEnd: current.timestamp,

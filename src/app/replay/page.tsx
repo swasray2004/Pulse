@@ -130,7 +130,7 @@ export default function ReplayPage() {
           </button>
           <button
             onClick={() => setPlaying((p) => !p)}
-            className="flex items-center gap-2 rounded-full bg-pulse-gradient px-5 py-2.5 text-sm font-semibold text-ink-950"
+            className="flex items-center gap-2 rounded-xl bg-[#00F3BB] hover:bg-[#33F7C9] px-5 py-2.5 text-sm font-bold text-ink-950 transition-all shadow-[0_0_20px_rgba(0,243,187,0.35)]"
           >
             {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             {playing ? "Pause" : "Play"}

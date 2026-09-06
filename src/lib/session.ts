@@ -7,10 +7,14 @@ export interface SessionData {
   name?: string;
 }
 
+const sessionSecret = process.env.SESSION_SECRET;
+
+if (!sessionSecret) {
+  throw new Error("SESSION_SECRET is not configured");
+}
+
 export const sessionOptions: SessionOptions = {
-  password:
-    process.env.SESSION_SECRET ||
-    "pulse_super_secret_session_key_min_32_characters_long_2026_prod",
+  password: sessionSecret,
   cookieName: "pulse_session",
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",

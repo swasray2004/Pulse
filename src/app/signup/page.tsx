@@ -152,7 +152,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-pulse-gradient px-4 py-3 text-sm font-semibold text-ink-950 transition-all hover:opacity-95 disabled:opacity-50"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00F3BB] hover:bg-[#33F7C9] px-4 py-3 text-sm font-bold text-ink-950 transition-all shadow-[0_0_24px_rgba(0,243,187,0.35)] hover:shadow-[0_0_32px_rgba(0,243,187,0.5)] disabled:opacity-50"
             >
               {loading ? (
                 <span className="inline-flex items-center gap-2">

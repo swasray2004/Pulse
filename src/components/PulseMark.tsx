@@ -2,43 +2,53 @@
 
 import { motion } from "framer-motion";
 
-// An original mark for PULSE: a circular badge with a live ECG-style pulse
-// line running through it, rendered in the signal→pulse gradient. Inspired
-// by the blue/teal duotone the user asked for, but an independent design —
-// not a reproduction of any existing company's logo.
-export function PulseMark({ size = 32, animated = true }: { size?: number; animated?: boolean }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+export function PulseMark({
+  size = 32,
+  animated = true,
+}: {
+  size?: number;
+  animated?: boolean;
+}) {
+  const content = (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="shrink-0"
+    >
       <defs>
-        <linearGradient id="pulseMarkGrad" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#7C8CFF" />
-          <stop offset="45%" stopColor="#5B6EF5" />
-          <stop offset="100%" stopColor="#0BE39F" />
-        </linearGradient>
+        <clipPath id="growwCircleClip">
+          <circle cx="50" cy="50" r="48" />
+        </clipPath>
       </defs>
-      <circle cx="20" cy="20" r="19" fill="url(#pulseMarkGrad)" fillOpacity="0.14" stroke="url(#pulseMarkGrad)" strokeWidth="1.4" />
-      {animated ? (
-        <motion.path
-          d="M6 21 L13 21 L16 12 L21 29 L24 17 L27 21 L34 21"
-          stroke="url(#pulseMarkGrad)"
-          strokeWidth="2.1"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          initial={{ pathLength: 0, opacity: 0.4 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-        />
-      ) : (
+      <g clipPath="url(#growwCircleClip)">
+        {/* Top electric blue segment (#5367FE) */}
+        <rect width="100" height="100" fill="#5367FE" />
+
+        {/* Bottom vibrant cyan-mint trendline wave (#00F3BB) */}
         <path
-          d="M6 21 L13 21 L16 12 L21 29 L24 17 L27 21 L34 21"
-          stroke="url(#pulseMarkGrad)"
-          strokeWidth="2.1"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
+          d="M -10 110 L -10 76 L 14 74 C 24 64 34 47 43 47 C 50 47 53 57 60 57 C 67 57 77 39 88 23 L 110 0 L 110 110 Z"
+          fill="#00F3BB"
         />
-      )}
+      </g>
     </svg>
   );
+
+  if (!animated) {
+    return content;
+  }
+
+  return (
+    <motion.div
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="inline-flex items-center justify-center shrink-0"
+    >
+      {content}
+    </motion.div>
+  );
 }
+

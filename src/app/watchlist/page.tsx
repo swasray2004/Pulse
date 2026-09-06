@@ -70,7 +70,7 @@ export default function WatchlistListPage() {
         <button
           onClick={create}
           disabled={creating || !name.trim()}
-          className="flex items-center gap-1.5 rounded-xl bg-pulse-gradient px-4 py-2.5 text-sm font-semibold text-ink-950 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-xl bg-[#00F3BB] hover:bg-[#33F7C9] px-4 py-2.5 text-sm font-bold text-ink-950 transition-all shadow-[0_0_20px_rgba(0,243,187,0.35)] disabled:opacity-50"
         >
           <Plus className="h-4 w-4" />
           Create

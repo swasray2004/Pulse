@@ -114,8 +114,8 @@ function personalizationAdjustment(
 
 function classify(score: number): AttentionClassification {
     if (score <= 30) return "NORMAL";
-    if (score <= 60) return "INTERESTING";
-    if (score <= 80) return "IMPORTANT";
+    if (score <= 55) return "INTERESTING";
+    if (score <= 70) return "IMPORTANT";
     return "HIGH_ATTENTION";
 }
 
@@ -135,7 +135,22 @@ function buildReason(input: ChangeWindowInput, signals: SignalBreakdown, pctChan
         );
     }
     if (signals.event > 0 && input.events.length > 0) {
-        parts.push(`with a ${input.events[0]!.type.replace("_", " ")} event detected`);
+        const rawType = input.events[0]!.type;
+        const phrase =
+            rawType === "analyst_action"
+                ? "alongside an analyst rating change"
+                : rawType === "earnings"
+                  ? "alongside an earnings catalyst"
+                  : rawType === "guidance"
+                    ? "alongside a guidance update"
+                    : rawType === "52w_high"
+                      ? "hitting a 52-week high"
+                      : rawType === "52w_low"
+                        ? "hitting a 52-week low"
+                        : rawType === "news"
+                          ? "alongside a breaking news catalyst"
+                          : "with a market catalyst detected";
+        parts.push(phrase);
     }
     return parts.join(", ") + ".";
 }

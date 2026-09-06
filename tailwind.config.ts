@@ -15,14 +15,14 @@ const config: Config = {
           600: "#262B37",
         },
         signal: {
-          400: "#7C8CFF",
-          500: "#5B6EF5",
-          600: "#4A5CE0",
+          400: "#7485FE",
+          500: "#5367FE",
+          600: "#3B4FE6",
         },
         pulse: {
-          400: "#3DF0B8",
-          500: "#0BE39F",
-          600: "#00C787",
+          400: "#33F7C9",
+          500: "#00F3BB",
+          600: "#00D1A0",
         },
         amber: {
           400: "#FFB454",
@@ -36,18 +36,19 @@ const config: Config = {
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
         body: ["var(--font-body)", "sans-serif"],
+        sans: ["var(--font-body)", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       backgroundImage: {
         "pulse-gradient":
-          "linear-gradient(135deg, #5B6EF5 0%, #4A5CE0 35%, #0BE39F 100%)",
+          "linear-gradient(135deg, #5367FE 0%, #00F3BB 100%)",
         "pulse-radial":
-          "radial-gradient(circle at 20% 20%, rgba(91,110,245,0.25), transparent 45%), radial-gradient(circle at 80% 70%, rgba(11,227,159,0.20), transparent 45%)",
+          "radial-gradient(circle at 20% 20%, rgba(83,103,254,0.25), transparent 45%), radial-gradient(circle at 80% 70%, rgba(0,243,187,0.20), transparent 45%)",
         grain: "url('/noise.png')",
       },
       boxShadow: {
-        glow: "0 0 40px -8px rgba(91,110,245,0.45)",
-        "glow-pulse": "0 0 40px -8px rgba(11,227,159,0.45)",
+        glow: "0 0 40px -8px rgba(83,103,254,0.45)",
+        "glow-pulse": "0 0 40px -8px rgba(0,243,187,0.45)",
         glass: "inset 0 1px 0 0 rgba(255,255,255,0.06)",
       },
       keyframes: {

@@ -223,7 +223,7 @@ export const api = {
     return {
       watchlist: data.watchlist,
       awaySummary: {
-        awayLabel: "Since your last check-in",
+        awayLabel: "4 hours",
         totalMovements: data.summary?.analyzedStocks ?? 0,
         meaningfulCount: signals.length,
         filteredCount: noise.length,
