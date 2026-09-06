@@ -17,29 +17,44 @@ import { prisma } from "@/lib/prisma";
 export async function analyzeStock(
     symbol: string,
     preferences: UserPreferenceInput = DEFAULT_PREFERENCES,
+    preloadedData?: {
+        snapshots?: Array<{ price: number; volume: number; timestamp: Date }>;
+        events?: Array<{ symbol: string; type: string; headline: string; timestamp: Date }>;
+    },
 ) {
     const normalizedSymbol = symbol.trim().toUpperCase();
 
-    const [snapshots, events] = await Promise.all([
-        prisma.marketSnapshot.findMany({
-            where: {
-                symbol: normalizedSymbol,
-            },
-            orderBy: {
-                timestamp: "desc",
-            },
-            take: 2,
-        }),
-        prisma.marketEvent.findMany({
-            where: {
-                symbol: normalizedSymbol,
-            },
-            orderBy: {
-                timestamp: "desc",
-            },
-            take: 5,
-        }),
-    ]);
+    let snapshots = preloadedData?.snapshots;
+    let events = preloadedData?.events;
+
+    if (!snapshots || !events) {
+        const [loadedSnapshots, loadedEvents] = await Promise.all([
+            snapshots
+                ? Promise.resolve(snapshots)
+                : prisma.marketSnapshot.findMany({
+                      where: {
+                          symbol: normalizedSymbol,
+                      },
+                      orderBy: {
+                          timestamp: "desc",
+                      },
+                      take: 2,
+                  }),
+            events
+                ? Promise.resolve(events)
+                : prisma.marketEvent.findMany({
+                      where: {
+                          symbol: normalizedSymbol,
+                      },
+                      orderBy: {
+                          timestamp: "desc",
+                      },
+                      take: 5,
+                  }),
+        ]);
+        snapshots = loadedSnapshots;
+        events = loadedEvents;
+    }
 
     if (snapshots.length < 2) {
         return null;

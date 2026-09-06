@@ -238,6 +238,17 @@ export const api = {
   getChanges: (watchlistId: string) =>
     request<unknown>(`/watchlists/${watchlistId}/changes`),
 
+  getAttentionHistory: (watchlistId: string) =>
+    request<{
+      ticks: Array<{
+        timestamp: string;
+        date: string;
+        score: number;
+        stockCount: number;
+      }>;
+      currentScore: number;
+    }>(`/watchlists/${watchlistId}/attention-history`),
+
   getReplay: (watchlistId: string) =>
     request<ReplayResult>(`/watchlists/${watchlistId}/replay`),
 

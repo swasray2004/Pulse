@@ -8,6 +8,7 @@ import { usePulseStore } from "@/lib/store";
 import { AttentionCard } from "@/components/AttentionCard";
 import { MarketMap } from "@/components/MarketMap";
 import { SignalNoisePanel } from "@/components/SignalNoisePanel";
+import { WatchlistAttentionTimeline } from "@/components/WatchlistAttentionTimeline";
 import { Card, EmptyState, Skeleton } from "@/components/ui/primitives";
 import { PulseMark } from "@/components/PulseMark";
 import { ArrowRight, Activity } from "lucide-react";
@@ -36,14 +37,26 @@ export default function PulseHomePage() {
       let watchlistId = activeWatchlistId;
 
       // Validate that activeWatchlistId belongs to the currently logged in user
-      if (!watchlists.some((w) => w.id === watchlistId)) {
-        watchlistId = watchlists.length > 0 ? watchlists[0].id : null;
+      if (!watchlists || !watchlists.some((w) => w.id === watchlistId)) {
+        watchlistId = watchlists && watchlists.length > 0 ? watchlists[0].id : null;
         setActiveWatchlistId(watchlistId);
       }
 
       if (watchlistId) {
-        const data = await api.getPulse(watchlistId);
-        setPulse(data);
+        try {
+          const data = await api.getPulse(watchlistId);
+          setPulse(data);
+        } catch (pulseErr: any) {
+          // If the selected watchlist wasn't found (e.g. stale ID), fallback to first available
+          if (watchlists && watchlists.length > 0 && watchlists[0].id !== watchlistId) {
+            watchlistId = watchlists[0].id;
+            setActiveWatchlistId(watchlistId);
+            const data = await api.getPulse(watchlistId);
+            setPulse(data);
+          } else {
+            throw pulseErr;
+          }
+        }
       } else {
         setPulse(null);
       }
@@ -91,6 +104,7 @@ export default function PulseHomePage() {
           <Skeleton className="h-[480px] lg:col-span-5 rounded-3xl" />
           <Skeleton className="h-[480px] lg:col-span-7 rounded-3xl" />
         </div>
+        <Skeleton className="h-64 w-full rounded-3xl" />
       </div>
     );
   }
@@ -334,6 +348,21 @@ export default function PulseHomePage() {
           <SignalNoisePanel noise={noise} />
         </div>
       </div>
+
+      {/* ── Watchlist Attention Timeline ────────────────────────────────── */}
+      <WatchlistAttentionTimeline
+        watchlistId={watchlist.id}
+        fallbackScore={
+          signals.length > 0
+            ? Math.round(
+                signals.reduce(
+                  (sum: number, s: any) => sum + (s.attention?.score ?? 0),
+                  0,
+                ) / signals.length,
+              )
+            : 15
+        }
+      />
     </motion.div>
   );
 }

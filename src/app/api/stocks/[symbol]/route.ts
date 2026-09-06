@@ -81,6 +81,17 @@ export async function GET(
             take: 5,
         });
 
+        // Build history array from the already-fetched snapshots.
+        // Reverse so the array is chronological (oldest → newest) for the chart.
+        const history = [...snapshots]
+            .filter((s) => typeof s.price === "number" && Number.isFinite(s.price))
+            .reverse()
+            .map((s) => ({
+                timestamp: s.timestamp.toISOString(),
+                price: s.price,
+                volume: s.volume,
+            }));
+
         if (!analysis) {
             // No snapshots available — return structural shell with zeros
             return NextResponse.json({
@@ -109,6 +120,7 @@ export async function GET(
                 },
                 state: "NORMAL",
                 events: events.map((e) => ({ type: e.type, headline: e.headline })),
+                history,
             });
         }
 
@@ -138,6 +150,7 @@ export async function GET(
             },
             state: analysis.state,
             events: events.map((e) => ({ type: e.type, headline: e.headline })),
+            history,
         });
     } catch (error) {
         console.error("Failed to fetch stock detail:", error);
